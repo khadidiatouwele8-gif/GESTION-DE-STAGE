@@ -28,14 +28,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // User (optionnel)
-    Route::apiResource('users', UserController::class);
-
-    // Stages
+    // Stages (Toutes les méthodes CRUD : index, store, show, update, destroy)
     Route::apiResource('stages', StageController::class);
 
-    // Candidatures
-    Route::apiResource('candidatures', CandidatureController::class);
+    // Candidatures (Uniquement Liste et Postuler selon le guide)
+    Route::apiResource('candidatures', CandidatureController::class)->only(['index', 'store']);
 });
 
 /*
