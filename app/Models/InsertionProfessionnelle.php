@@ -1,15 +1,31 @@
 <?php
+
 namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class InsertionProfessionnelle extends Model
 {
-    protected $fillable = ['etudiant_id', 'rapport_id', 'statut', 'entreprise_actuelle', 'poste_actuel', 'date_insertion'];
+    use HasFactory;
 
-    public function etudiant() {
+    protected $fillable = [
+        'etudiant_id', 'stage_id', 'entreprise_id', 'poste_occupe',
+        'date_debut', 'date_fin', 'type_contrat', 'salaire'
+    ];
+
+    public function etudiant()
+    {
         return $this->belongsTo(Etudiant::class);
     }
-    public function rapport() {
-        return $this->belongsTo(Rapport::class);
+
+    public function stage()
+    {
+        return $this->belongsTo(Stage::class);
+    }
+
+    public function entreprise()
+    {
+        return $this->belongsTo(Entreprise::class);
     }
 }

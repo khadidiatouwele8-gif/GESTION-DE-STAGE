@@ -2,27 +2,46 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Stage extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'entreprise_id',
-        'titre',
-        'description',
-        'domaine',
-        'date_debut',
-        'date_fin',
-        'statut'
+        'candidature_id', 'encadreur_id', 'date_debut', 
+        'date_fin', 'statut', 'remarques'
     ];
 
-    public function entreprise()
+    public function candidature()
     {
-        return $this->belongsTo(Entreprise::class);
+        return $this->belongsTo(Candidature::class);
     }
 
-    public function candidatures()
+    public function encadreur()
     {
-        return $this->hasMany(Candidature::class);
+        return $this->belongsTo(Encadreur::class);
+    }
+
+    public function convention()
+    {
+        return $this->hasOne(Convention::class);
+    }
+
+    public function rapport()
+    {
+        return $this->hasOne(Rapport::class);
+    }
+
+    // Scopes
+    public function scopeEnCours($query)
+    {
+        return $query->where('statut', 'en_cours');
+    }
+
+    public function scopeTermine($query)
+    {
+        return $query->where('statut', 'termine');
     }
 }
