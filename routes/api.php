@@ -6,6 +6,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StageController;
 use App\Http\Controllers\CandidatureController;
+use App\Http\Controllers\OffreController;
+use App\Http\Controllers\ConventionController;
+use App\Http\Controllers\RapportController;
+use App\Http\Controllers\EncadreurController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,8 +35,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // Stages (Toutes les méthodes CRUD : index, store, show, update, destroy)
     Route::apiResource('stages', StageController::class);
 
-    // Candidatures (Uniquement Liste et Postuler selon le guide)
-    Route::apiResource('candidatures', CandidatureController::class)->only(['index', 'store']);
+    // Offres, conventions, rapports et encadreurs
+    Route::apiResource('offres', OffreController::class);
+    Route::apiResource('conventions', ConventionController::class);
+    Route::apiResource('rapports', RapportController::class);
+    Route::apiResource('encadreurs', EncadreurController::class);
+
+    // Candidatures
+    Route::apiResource('candidatures', CandidatureController::class);
 });
 
 /*

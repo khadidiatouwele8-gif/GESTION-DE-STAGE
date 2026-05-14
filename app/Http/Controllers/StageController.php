@@ -2,48 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreStageRequest;
+use App\Http\Resources\StageResource;
 use App\Models\Stage;
+use App\Models\Candidature;
+use Illuminate\Http\Request;
 
 class StageController extends Controller
 {
-    /**
-     * Liste de tous les stages
-     */
     public function index()
     {
-        return response()->json(['message' => 'Liste des stages (Architecture OK)']);
+        $stages = Stage::with(['candidature.offre.entreprise', 'encadreur', 'convention', 'rapport'])->get();
+        return StageResource::collection($stages);
     }
 
-    /**
-     * Créer un nouveau stage
-     */
-    public function store(Request $request)
+    public function store(StoreStageRequest $request)
     {
-        return response()->json(['message' => 'Stage créé (Architecture OK)'], 201);
+        $data = $request->validated();
+
+        $candidature = Candidature::findOrFail($data['candidature_id']);
+        if ($candidature->statut !== 'acceptee') {
+            return response()->json(['message' => 'La candidature doit être acceptée pour créer un stage.'], 422);
+        }
+
+        if ($candidature->stage) {
+            return response()->json(['message' => 'Un stage existe déjà pour cette candidature.'], 422);
+        }
+
+        $stage = Stage::create($data);
+        return new StageResource($stage->load(['candidature.offre.entreprise', 'encadreur', 'convention', 'rapport']));
     }
 
-    /**
-     * Détail d'un stage
-     */
     public function show($id)
     {
-        return response()->json(['message' => 'Détail du stage ' . $id]);
+        $stage = Stage::with(['candidature.offre.entreprise', 'encadreur', 'convention', 'rapport'])->findOrFail($id);
+        return new StageResource($stage);
     }
 
-    /**
-     * Modifier un stage
-     */
-    public function update(Request $request, $id)
+    public function update(StoreStageRequest $request, $id)
     {
-        return response()->json(['message' => 'Stage ' . $id . ' mis à jour']);
+        $stage = Stage::findOrFail($id);
+        $stage->update($request->validated());
+        return new StageResource($stage->load(['candidature.offre.entreprise', 'encadreur', 'convention', 'rapport']));
     }
 
-    /**
-     * Supprimer un stage
-     */
     public function destroy($id)
     {
+        $stage = Stage::findOrFail($id);
+        $stage->delete();
         return response()->json(['message' => 'Stage supprimé avec succès']);
     }
 }
