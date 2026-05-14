@@ -11,64 +11,49 @@ use App\Http\Controllers\ConventionController;
 use App\Http\Controllers\RapportController;
 use App\Http\Controllers\EncadreurController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Voici les routes API de l'application GESTION-DE-STAGE
-|
-*/
-
 // Routes publiques
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login',    [AuthController::class, 'login']);
 
-// Routes protégées (nécessitent token Sanctum)
+// Routes protégées
 Route::middleware('auth:sanctum')->group(function () {
+
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', function (Request $request) {
-        return $request->user();
+    Route::get('/profil',  [AuthController::class, 'profil']);
+    Route::put('/profil',  [AuthController::class, 'updateProfil']);
+
+    // Offres — lecture pour tous
+    Route::get('/offres',        [OffreController::class, 'index']);
+    Route::get('/offres/{id}',   [OffreController::class, 'show']);
+
+    // Offres — écriture réservée aux entreprises
+    Route::middleware('is.entreprise')->group(function () {
+        Route::post('/offres',          [OffreController::class, 'store']);
+        Route::put('/offres/{id}',      [OffreController::class, 'update']);
+        Route::delete('/offres/{id}',   [OffreController::class, 'destroy']);
     });
 
-    // Stages (Toutes les méthodes CRUD : index, store, show, update, destroy)
-    Route::apiResource('stages', StageController::class);
+    // Candidatures — postuler réservé aux étudiants
+    Route::middleware('is.etudiant')->group(function () {
+        Route::post('/candidatures', [CandidatureController::class, 'store']);
+    });
 
-    // Offres, conventions, rapports et encadreurs
-    Route::apiResource('offres', OffreController::class);
+    // Candidatures — reste pour tous
+    Route::get('/candidatures',          [CandidatureController::class, 'index']);
+    Route::get('/candidatures/{id}',     [CandidatureController::class, 'show']);
+    Route::put('/candidatures/{id}',     [CandidatureController::class, 'update']);
+    Route::delete('/candidatures/{id}',  [CandidatureController::class, 'destroy']);
+
+    // Stages, conventions, rapports, encadreurs
+    Route::apiResource('stages',      StageController::class);
     Route::apiResource('conventions', ConventionController::class);
-    Route::apiResource('rapports', RapportController::class);
-    Route::apiResource('encadreurs', EncadreurController::class);
+    Route::apiResource('rapports',    RapportController::class);
+    Route::apiResource('encadreurs',  EncadreurController::class);
 
-    // Candidatures
-    Route::apiResource('candidatures', CandidatureController::class);
+    // Admin uniquement
+    Route::middleware('is.admin')->group(function () {
+        Route::apiResource('users', UserController::class);
+    });
+
 });
-
-/*
-|--------------------------------------------------------------------------
-| Liste des endpoints
-|--------------------------------------------------------------------------
-|
-| Méthode    Endpoint              Description                        Auth requis
-| --------   -------------------   --------------------------------    ------------
-| POST       /api/register         Inscription d'un nouvel utilisateur   Non
-| POST       /api/login            Connexion + génération token          Non
-| POST       /api/logout           Déconnexion + révocation token        Oui
-| GET        /api/user             Profil de l'utilisateur connecté      Oui
-| GET        /api/users            Liste de tous les utilisateurs        Oui
-| GET        /api/users/{id}       Détail d'un utilisateur               Oui
-| PUT        /api/users/{id}       Modifier un utilisateur               Oui
-| DELETE     /api/users/{id}       Supprimer un utilisateur              Oui
-| GET        /api/stages           Liste de tous les stages              Oui
-| POST       /api/stages           Créer un nouveau stage                Oui
-| GET        /api/stages/{id}      Détail d'un stage                     Oui
-| PUT        /api/stages/{id}      Modifier un stage                     Oui
-| DELETE     /api/stages/{id}      Supprimer un stage                    Oui
-| GET        /api/candidatures     Liste des candidatures                Oui
-| POST       /api/candidatures     Postuler à un stage                   Oui
-| GET        /api/candidatures/{id} Détail d'une candidature              Oui
-| PUT        /api/candidatures/{id} Modifier une candidature              Oui
-| DELETE     /api/candidatures/{id} Supprimer une candidature             Oui
-|
-*/

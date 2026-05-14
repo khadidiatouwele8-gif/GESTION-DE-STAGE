@@ -8,13 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IsAdmin
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Accès refusé — Administrateur requis'], 403);
+        }
+
         return $next($request);
     }
 }
