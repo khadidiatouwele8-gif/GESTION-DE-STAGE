@@ -1,0 +1,29 @@
+<div style="padding:2rem; max-width:600px; margin:0 auto;">
+  <h1>Mon Profil</h1>
+
+  <div class="card" style="margin-top:1.5rem;">
+    <div style="margin-bottom:1rem;">
+      <label style="color:#6b7280;">Nom complet</label>
+      <p style="font-weight:600; font-size:1.1rem;">{{ user.name }}</p>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="color:#6b7280;">Email</label>
+      <p style="font-weight:600;">{{ user.email }}</p>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="color:#6b7280;">Rôle</label>
+      <p style="font-weight:600;">{{ user.role?.nom || 'Non défini' }}</p>
+    </div>
+  </div>
+
+  <div style="margin-top:1.5rem; display:flex; gap:1rem;">
+    <a routerLink="/dashboard" style="flex:1;">
+      <button style="background:linear-gradient(135deg,#86efac,#4ade80);">
+        Retour au dashboard
+      </button>
+    </a>
+    <button (click)="logout()" style="flex:1; background:linear-gradient(135deg,#fca5a5,#f87171);">
+      Se déconnecter
+    </button>
+  </div>
+</div>

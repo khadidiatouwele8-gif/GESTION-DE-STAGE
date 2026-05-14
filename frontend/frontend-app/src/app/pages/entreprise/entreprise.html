@@ -1,0 +1,55 @@
+<div style="padding:2rem; max-width:900px; margin:0 auto;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+    <h1>Espace Entreprise</h1>
+    <a routerLink="/dashboard">
+      <button style="width:auto; padding:0.75rem 1.5rem;">Retour</button>
+    </a>
+  </div>
+
+  <h2 style="margin-bottom:1rem;">Créer une offre de stage</h2>
+  <div class="card">
+    <form (ngSubmit)="creerOffre()">
+      <label>Titre de l'offre</label>
+      <input type="text" [(ngModel)]="offre.titre" name="titre" required />
+
+      <label>Description</label>
+      <textarea [(ngModel)]="offre.description" name="description" rows="4"
+        style="width:100%; padding:1rem; border-radius:18px; border:1px solid #e2e8f0; margin-top:0.75rem; background:#f8fafc; resize:vertical;"></textarea>
+
+      <label>Domaine</label>
+      <input type="text" [(ngModel)]="offre.domaine" name="domaine" required />
+
+      <label>Localisation</label>
+      <input type="text" [(ngModel)]="offre.localisation" name="localisation" required />
+
+      <label>Durée (mois)</label>
+      <input type="number" [(ngModel)]="offre.duree_mois" name="duree_mois" required />
+
+      <label>Date expiration</label>
+      <input type="date" [(ngModel)]="offre.date_expiration" name="date_expiration" required />
+
+      <button type="submit" style="margin-top:1rem;">Publier l'offre</button>
+      <p style="color:green; margin-top:0.5rem;" *ngIf="success">{{ success }}</p>
+      <p style="color:red; margin-top:0.5rem;" *ngIf="error">{{ error }}</p>
+    </form>
+  </div>
+
+  <h2 style="margin:2rem 0 1rem;">Mes offres publiées</h2>
+  <div *ngIf="offres.length === 0" style="text-align:center; color:#6b7280;">
+    Aucune offre publiée pour le moment.
+  </div>
+  <article class="offer-card" *ngFor="let o of offres">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="tag">{{ o.domaine }}</span>
+      <span style="font-size:0.85rem; color:#6b7280;">{{ o.statut }}</span>
+    </div>
+    <h2 style="margin:0.75rem 0 0.5rem;">{{ o.titre }}</h2>
+    <p style="color:#6b7280;">{{ o.description }}</p>
+    <div style="display:flex; justify-content:space-between; margin-top:0.5rem;">
+      <span style="font-size:0.85rem; color:#6b7280;">{{ o.localisation }} — {{ o.duree_mois }} mois</span>
+      <button (click)="supprimerOffre(o.id)" style="width:auto; padding:0.4rem 1rem; background:linear-gradient(135deg,#fca5a5,#f87171); font-size:0.85rem;">
+        Supprimer
+      </button>
+    </div>
+  </article>
+</div>
