@@ -1,1 +1,34 @@
-<p>dashboard works!</p>
+<div style="padding: 2rem; max-width: 900px; margin: 0 auto;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+    <div>
+      <h1 style="margin:0;">Bonjour, {{ userName }} 👋</h1>
+      <p style="color:#6b7280; margin:0;">Bienvenue sur votre espace de gestion de stage</p>
+    </div>
+    <button (click)="logout()" style="width:auto; padding:0.75rem 1.5rem; background:linear-gradient(135deg,#fca5a5,#f87171);">
+      Se déconnecter
+    </button>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:2rem;">
+    <div class="card" style="text-align:center;">
+      <p style="color:#6b7280; margin:0;">Offres disponibles</p>
+      <p style="font-size:2.5rem; font-weight:bold; color:#4ade80; margin:0.5rem 0;">{{ nbOffres }}</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <p style="color:#6b7280; margin:0;">Mes candidatures</p>
+      <p style="font-size:2.5rem; font-weight:bold; color:#60a5fa; margin:0.5rem 0;">{{ nbCandidatures }}</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <p style="color:#6b7280; margin:0;">Stages en cours</p>
+      <p style="font-size:2.5rem; font-weight:bold; color:#f472b6; margin:0.5rem 0;">{{ nbStages }}</p>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:1rem;">
+    <a routerLink="/offres" style="flex:1;">
+      <button style="background:linear-gradient(135deg,#86efac,#4ade80);">
+        Voir les offres de stage
+      </button>
+    </a>
+  </div>
+</div>
