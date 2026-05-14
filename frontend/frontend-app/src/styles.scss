@@ -1,0 +1,61 @@
+@use '@angular/material' as mat;
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+  color: #111827;
+}
+
+.page-login, .page-offers {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  border-radius: 32px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
+  cursor: pointer;
+}
+
+input {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  margin-top: 0.75rem;
+  background: #f8fafc;
+}
+
+.offer-card {
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.tag {
+  display: inline-flex;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: #ecfccb;
+  color: #166534;
+  font-weight: 700;
+}
