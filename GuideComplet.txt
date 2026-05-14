@@ -1,0 +1,1188 @@
+GUIDE DE SPRINTS — PROJET GESTION DE STAGE
+Organisation claire des tâches pour terminer rapidement le projet
+
+1. Objectif du document
+Ce document sert de guide pratique pour répartir efficacement le travail entre les membres de l’équipe. Chaque membre doit pouvoir suivre les étapes indiquées, comprendre précisément ce qu’il doit développer et terminer ses tâches sans confusion.
+
+2. État actuel du projet
+Backend Laravel déjà installé.
+Authentification Sanctum fonctionnelle (register/login/logout).
+Modèles principaux déjà créés : Offre, Stage, Candidature, Entreprise, Étudiant, Encadreur, User.
+Certaines routes API et contrôleurs existent déjà.
+Le frontend Angular n’a pas encore été créé.
+
+3. Structure attendue du projet
+Le dépôt Git doit contenir deux dossiers principaux :
+backend/ → Application Laravel
+frontend/ → Application Angular
+
+4. Règles Git
+1.Chaque membre travaille dans sa propre branche.
+2.Toujours récupérer les dernières modifications avant de commencer.
+3.Faire des commits fréquents.
+4.Créer une Pull Request avant fusion dans main.
+
+5. Plan détaillé des tâches par membre
+Sprint principal : Structuration backend + frontend et finalisation du backend
+
+Membre 1 — Structure du projet & Angular
+Créer les dossiers backend/ et frontend/.
+Déplacer toute l’application Laravel dans backend/.
+Créer le projet Angular dans frontend/.
+Installer Angular Material.
+Vérifier que Angular démarre correctement avec ng serve.
+Configurer les routes Angular de base.
+
+Commandes importantes :
+git checkout main
+git pull origin main
+git checkout -b feature/sprint2-structure
+mkdir backend frontend
+ng new frontend-app --routing --style=scss
+ng add @angular/material
+
+Code pour les routes Angular de base (frontend/frontend-app/src/app/app-routing.module.ts) :
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { LoginComponent } from './pages/login/login.component';
+import { RegisterComponent } from './pages/register/register.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { OffersComponent } from './pages/offers/offers.component';
+import { AuthGuard } from './core/guards/auth.guard';
+
+const routes: Routes = [
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: 'offres', component: OffersComponent, canActivate: [AuthGuard] },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '**', redirectTo: 'dashboard' }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {}
+
+Membre 2 — API Backend Laravel
+Le rôle du membre 2 est de rendre toutes les APIs complètement fonctionnelles.
+Finaliser OffreController.
+Finaliser CandidatureController.
+Finaliser StageController.
+Créer les routes API manquantes.
+Créer les FormRequest pour la validation.
+Créer les API Resources.
+
+Commandes pour commencer :
+git checkout main
+git pull origin main
+git checkout -b feature/sprint2-backend-api
+
+Code pour backend/routes/api.php :
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\StageController;
+use App\Http\Controllers\CandidatureController;
+use App\Http\Controllers\OffreController;
+use App\Http\Controllers\ConventionController;
+use App\Http\Controllers\RapportController;
+use App\Http\Controllers\EncadreurController;
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/profil', [AuthController::class, 'profil']);
+    Route::put('/profil', [AuthController::class, 'updateProfil']);
+
+    Route::apiResource('offres', OffreController::class);
+    Route::apiResource('candidatures', CandidatureController::class);
+    Route::apiResource('stages', StageController::class);
+    Route::apiResource('conventions', ConventionController::class);
+    Route::apiResource('rapports', RapportController::class);
+    Route::apiResource('encadreurs', EncadreurController::class);
+});
+
+Code pour backend/app/Http/Requests/StoreOffreRequest.php :
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreOffreRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'entreprise_id' => 'required|exists:entreprises,id',
+            'titre' => 'required|string|max:255',
+            'description' => 'required|string',
+            'domaine' => 'required|string|max:255',
+            'localisation' => 'required|string|max:255',
+            'duree_mois' => 'required|integer|min:1',
+            'date_publication' => 'required|date',
+            'date_expiration' => 'required|date|after_or_equal:date_publication',
+            'statut' => 'sometimes|in:ouverte,fermee,expiree',
+        ];
+    }
+}
+
+Code pour backend/app/Http/Requests/StoreCandidatureRequest.php :
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreCandidatureRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'etudiant_id' => 'required|exists:etudiants,id',
+            'offre_id' => 'required|exists:offres,id',
+            'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'lettre_motivation' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'statut' => 'sometimes|in:en_attente,acceptee,refusee',
+        ];
+    }
+}
+
+Code pour backend/app/Http/Requests/StoreStageRequest.php :
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreStageRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'candidature_id' => 'required|exists:candidatures,id',
+            'encadreur_id' => 'nullable|exists:encadreurs,id',
+            'date_debut' => 'required|date',
+            'date_fin' => 'required|date|after_or_equal:date_debut',
+            'statut' => 'sometimes|in:en_cours,termine,abandonne',
+        ];
+    }
+}
+
+Code pour backend/app/Http/Controllers/OffreController.php :
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreOffreRequest;
+use App\Http\Resources\OffreResource;
+use App\Models\Offre;
+
+class OffreController extends Controller
+{
+    public function index()
+    {
+        $offres = Offre::with('entreprise')->where('statut', 'ouverte')->get();
+        return OffreResource::collection($offres);
+    }
+
+    public function store(StoreOffreRequest $request)
+    {
+        $offre = Offre::create($request->validated());
+        return new OffreResource($offre);
+    }
+
+    public function show($id)
+    {
+        $offre = Offre::with('entreprise')->findOrFail($id);
+        return new OffreResource($offre);
+    }
+
+    public function update(StoreOffreRequest $request, $id)
+    {
+        $offre = Offre::findOrFail($id);
+        $offre->update($request->validated());
+        return new OffreResource($offre);
+    }
+
+    public function destroy($id)
+    {
+        $offre = Offre::findOrFail($id);
+        $offre->delete();
+        return response()->json(['message' => 'Offre supprimée avec succès']);
+    }
+}
+
+Code pour backend/app/Http/Controllers/CandidatureController.php :
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreCandidatureRequest;
+use App\Http\Resources\CandidatureResource;
+use App\Models\Candidature;
+use Illuminate\Support\Facades\Storage;
+
+class CandidatureController extends Controller
+{
+    public function index()
+    {
+        $candidatures = Candidature::with(['etudiant.user', 'offre.entreprise'])->get();
+        return CandidatureResource::collection($candidatures);
+    }
+
+    public function store(StoreCandidatureRequest $request)
+    {
+        $data = $request->validated();
+
+        if ($request->hasFile('cv')) {
+            $data['cv'] = $request->file('cv')->store('cvs', 'public');
+        }
+
+        if ($request->hasFile('lettre_motivation')) {
+            $data['lettre_motivation'] = $request->file('lettre_motivation')->store('lettres', 'public');
+        }
+
+        $candidature = Candidature::create($data);
+        return new CandidatureResource($candidature->load(['etudiant.user', 'offre.entreprise']));
+    }
+
+    public function show($id)
+    {
+        $candidature = Candidature::with(['etudiant.user', 'offre.entreprise'])->findOrFail($id);
+        return new CandidatureResource($candidature);
+    }
+
+    public function update(StoreCandidatureRequest $request, $id)
+    {
+        $candidature = Candidature::findOrFail($id);
+        $data = $request->validated();
+
+        if ($request->hasFile('cv')) {
+            if ($candidature->cv) {
+                Storage::disk('public')->delete($candidature->cv);
+            }
+            $data['cv'] = $request->file('cv')->store('cvs', 'public');
+        }
+
+        if ($request->hasFile('lettre_motivation')) {
+            if ($candidature->lettre_motivation) {
+                Storage::disk('public')->delete($candidature->lettre_motivation);
+            }
+            $data['lettre_motivation'] = $request->file('lettre_motivation')->store('lettres', 'public');
+        }
+
+        $candidature->update($data);
+        return new CandidatureResource($candidature->load(['etudiant.user', 'offre.entreprise']));
+    }
+
+    public function destroy($id)
+    {
+        $candidature = Candidature::findOrFail($id);
+
+        if ($candidature->cv) {
+            Storage::disk('public')->delete($candidature->cv);
+        }
+        if ($candidature->lettre_motivation) {
+            Storage::disk('public')->delete($candidature->lettre_motivation);
+        }
+
+        $candidature->delete();
+        return response()->json(['message' => 'Candidature supprimée avec succès']);
+    }
+}
+
+Code pour backend/app/Http/Controllers/StageController.php :
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreStageRequest;
+use App\Http\Resources\StageResource;
+use App\Models\Candidature;
+use App\Models\Stage;
+
+class StageController extends Controller
+{
+    public function index()
+    {
+        $stages = Stage::with(['candidature.offre.entreprise', 'encadreur', 'convention', 'rapport'])->get();
+        return StageResource::collection($stages);
+    }
+
+    public function store(StoreStageRequest $request)
+    {
+        $validated = $request->validated();
+        $candidature = Candidature::findOrFail($validated['candidature_id']);
+
+        if ($candidature->statut !== 'acceptee') {
+            return response()->json(['message' => 'La candidature doit être acceptée pour créer un stage.'], 422);
+        }
+
+        if ($candidature->stage) {
+            return response()->json(['message' => 'Un stage existe déjà pour cette candidature.'], 422);
+        }
+
+        $stage = Stage::create($validated);
+        return new StageResource($stage->load(['candidature.offre.entreprise', 'encadreur', 'convention', 'rapport']));
+    }
+
+    public function show($id)
+    {
+        $stage = Stage::with(['candidature.offre.entreprise', 'encadreur', 'convention', 'rapport'])->findOrFail($id);
+        return new StageResource($stage);
+    }
+
+    public function update(StoreStageRequest $request, $id)
+    {
+        $stage = Stage::findOrFail($id);
+        $stage->update($request->validated());
+        return new StageResource($stage->load(['candidature.offre.entreprise', 'encadreur', 'convention', 'rapport']));
+    }
+
+    public function destroy($id)
+    {
+        $stage = Stage::findOrFail($id);
+        $stage->delete();
+        return response()->json(['message' => 'Stage supprimé avec succès']);
+    }
+}
+
+Membre 3 — Base de données & Relations
+Vérifier toutes les migrations Laravel.
+Vérifier les relations entre modèles.
+Tester les clés étrangères.
+Créer les seeders et factories.
+Tester migrate:fresh --seed.
+Vérifier storage:link.
+
+Commandes pour commencer :
+git checkout main
+git pull origin main
+git checkout -b feature/sprint2-db-relations
+
+Code pour backend/database/seeders/DatabaseSeeder.php :
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Role;
+use App\Models\Entreprise;
+use App\Models\Etudiant;
+use App\Models\Encadreur;
+use App\Models\Offre;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Créer les rôles
+        $adminRole = Role::create(['nom' => 'admin']);
+        $entrepriseRole = Role::create(['nom' => 'entreprise']);
+        $etudiantRole = Role::create(['nom' => 'etudiant']);
+        $encadreurRole = Role::create(['nom' => 'encadreur']);
+
+        // Créer un admin
+        $admin = User::factory()->create([
+            'email' => 'admin@example.com',
+            'role_id' => $adminRole->id,
+        ]);
+
+        // Créer une entreprise
+        $entreprise = Entreprise::factory()->create();
+        $userEntreprise = User::factory()->create([
+            'email' => 'entreprise@example.com',
+            'role_id' => $entrepriseRole->id,
+        ]);
+        $entreprise->user_id = $userEntreprise->id;
+        $entreprise->save();
+
+        // Créer un étudiant
+        $etudiant = Etudiant::factory()->create();
+        $userEtudiant = User::factory()->create([
+            'email' => 'etudiant@example.com',
+            'role_id' => $etudiantRole->id,
+        ]);
+        $etudiant->user_id = $userEtudiant->id;
+        $etudiant->save();
+
+        // Créer un encadreur
+        $encadreur = Encadreur::factory()->create();
+        $userEncadreur = User::factory()->create([
+            'email' => 'encadreur@example.com',
+            'role_id' => $encadreurRole->id,
+        ]);
+        $encadreur->user_id = $userEncadreur->id;
+        $encadreur->save();
+
+        // Créer des offres
+        Offre::factory(5)->create(['entreprise_id' => $entreprise->id]);
+    }
+}
+
+Membre 4 — Authentification & Sécurité
+Finaliser AuthController.
+
+Commandes pour commencer :
+git checkout main
+git pull origin main
+git checkout -b feature/sprint2-auth
+Créer les middlewares IsAdmin, IsEntreprise et IsEtudiant.
+Protéger les routes API avec les rôles.
+Créer GET /api/profil.
+Créer PUT /api/profil.
+Tester les accès utilisateurs.
+
+Code pour backend/app/Http/Controllers/AuthController.php :
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Etudiant;
+use App\Models\Entreprise;
+use App\Models\Encadreur;
+
+class AuthController extends Controller
+{
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:etudiant,entreprise,encadreur',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role_id' => \App\Models\Role::where('nom', $request->role)->first()->id,
+        ]);
+
+        // Créer le profil selon le rôle
+        if ($request->role === 'etudiant') {
+            Etudiant::create(['user_id' => $user->id]);
+        } elseif ($request->role === 'entreprise') {
+            Entreprise::create(['user_id' => $user->id]);
+        } elseif ($request->role === 'encadreur') {
+            Encadreur::create(['user_id' => $user->id]);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json(['token' => $token, 'user' => $user]);
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
+
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
+        }
+
+        $user = Auth::user();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json(['token' => $token, 'user' => $user]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logged out']);
+    }
+
+    public function profil(Request $request)
+    {
+        $user = $request->user();
+        $profil = $user->load(['role']);
+
+        if ($user->role->nom === 'etudiant') {
+            $profil = $user->load(['etudiant']);
+        } elseif ($user->role->nom === 'entreprise') {
+            $profil = $user->load(['entreprise']);
+        } elseif ($user->role->nom === 'encadreur') {
+            $profil = $user->load(['encadreur']);
+        }
+
+        return response()->json($profil);
+    }
+
+    public function updateProfil(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+        ]);
+
+        $user->update($request->only(['name', 'email']));
+
+        // Mettre à jour le profil spécifique
+        if ($user->role->nom === 'etudiant') {
+            $user->etudiant->update($request->only(['nom', 'prenom', 'telephone', 'adresse']));
+        } elseif ($user->role->nom === 'entreprise') {
+            $user->entreprise->update($request->only(['nom', 'secteur', 'adresse', 'telephone']));
+        } elseif ($user->role->nom === 'encadreur') {
+            $user->encadreur->update($request->only(['nom', 'prenom', 'specialite', 'telephone']));
+        }
+
+        return response()->json(['message' => 'Profil mis à jour']);
+    }
+}
+
+Code pour backend/app/Http/Middleware/IsAdmin.php :
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class IsAdmin
+{
+    public function handle(Request $request, Closure $next)
+    {
+        if ($request->user()->role->nom !== 'admin') {
+            return response()->json(['message' => 'Accès refusé'], 403);
+        }
+        return $next($request);
+    }
+}
+
+Code pour backend/app/Http/Middleware/IsEntreprise.php :
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class IsEntreprise
+{
+    public function handle(Request $request, Closure $next)
+    {
+        if ($request->user()->role->nom !== 'entreprise') {
+            return response()->json(['message' => 'Accès refusé'], 403);
+        }
+        return $next($request);
+    }
+}
+
+Code pour backend/app/Http/Middleware/IsEtudiant.php :
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class IsEtudiant
+{
+    public function handle(Request $request, Closure $next)
+    {
+        if ($request->user()->role->nom !== 'etudiant') {
+            return response()->json(['message' => 'Accès refusé'], 403);
+        }
+        return $next($request);
+    }
+}
+
+6. Sprint Frontend Angular (Membre 1 — continuation)
+Créer les pages Login, Register, Dashboard, Offres.
+Créer ApiService et AuthService.
+Créer AuthGuard.
+Connecter Angular à Laravel.
+Ajouter le design moderne.
+Permettre la candidature avec upload.
+
+Code pour frontend/frontend-app/src/app/core/services/api.service.ts :
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private apiUrl = 'http://127.0.0.1:8000/api';
+
+  constructor(private http: HttpClient) {}
+
+  login(payload: any) {
+    return this.http.post(`${this.apiUrl}/login`, payload);
+  }
+
+  register(payload: any) {
+    return this.http.post(`${this.apiUrl}/register`, payload);
+  }
+
+  getOffers() {
+    return this.http.get(`${this.apiUrl}/offres`);
+  }
+
+  getCandidatures() {
+    return this.http.get(`${this.apiUrl}/candidatures`);
+  }
+
+  createCandidature(formData: FormData) {
+    return this.http.post(`${this.apiUrl}/candidatures`, formData);
+  }
+
+  getProfile() {
+    return this.http.get(`${this.apiUrl}/profil`);
+  }
+
+  updateProfile(payload: any) {
+    return this.http.put(`${this.apiUrl}/profil`, payload);
+  }
+}
+
+Code pour frontend/frontend-app/src/app/core/services/auth.service.ts :
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  constructor(private router: Router) {}
+
+  saveToken(token: string) {
+    localStorage.setItem('auth_token', token);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
+  logout() {
+    localStorage.removeItem('auth_token');
+    this.router.navigate(['/login']);
+  }
+}
+
+Code pour frontend/frontend-app/src/app/core/guards/auth.guard.ts :
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthGuard implements CanActivate {
+  constructor(private auth: AuthService, private router: Router) {}
+
+  canActivate(): boolean {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return false;
+    }
+    return true;
+  }
+}
+
+Code pour frontend/frontend-app/src/app/pages/login/login.component.ts :
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
+})
+export class LoginComponent {
+  email = '';
+  password = '';
+  error = '';
+
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private router: Router
+  ) {}
+
+  submit() {
+    this.api.login({ email: this.email, password: this.password }).subscribe({
+      next: (res: any) => {
+        this.auth.saveToken(res.token);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Erreur de connexion';
+      }
+    });
+  }
+}
+
+Code pour frontend/frontend-app/src/app/pages/login/login.component.html :
+<div class="page-login">
+  <div class="card">
+    <h1>Se connecter</h1>
+    <p class="subtitle">Accédez à votre espace stagiaire ou entreprise</p>
+
+    <form (ngSubmit)="submit()">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" name="email" required />
+
+      <label>Mot de passe</label>
+      <input type="password" [(ngModel)]="password" name="password" required />
+
+      <button type="submit">Connexion</button>
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </form>
+
+    <div class="footer">
+      <span>Pas encore de compte ?</span>
+      <a routerLink="/register">Créer un compte</a>
+    </div>
+  </div>
+</div>
+
+Code pour frontend/frontend-app/src/app/pages/offers/offers.component.ts :
+import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../../core/services/api.service';
+
+@Component({
+  selector: 'app-offers',
+  templateUrl: './offers.component.html',
+  styleUrls: ['./offers.component.scss']
+})
+export class OffersComponent implements OnInit {
+  offers: any[] = [];
+  error = '';
+
+  constructor(private api: ApiService) {}
+
+  ngOnInit(): void {
+    this.api.getOffers().subscribe({
+      next: (res: any) => this.offers = res.data || res,
+      error: (err) => this.error = err.error?.message || 'Impossible de charger les offres'
+    });
+  }
+}
+
+Code pour frontend/frontend-app/src/app/pages/offers/offers.component.html :
+<div class="page-offers">
+  <div class="top">
+    <h1>Offres de stage</h1>
+    <p>Découvrez les meilleures opportunités et postulez en quelques clics.</p>
+  </div>
+
+  <div class="list">
+    <article class="offer-card" *ngFor="let offer of offers">
+      <div class="card-head">
+        <span class="tag">Offre</span>
+        <h2>{{ offer.titre }}</h2>
+      </div>
+      <p>{{ offer.description }}</p>
+
+      <div class="meta">
+        <span>{{ offer.domaine }}</span>
+        <span>{{ offer.localisation }}</span>
+      </div>
+
+      <div class="actions">
+        <button>Postuler</button>
+      </div>
+    </article>
+  </div>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+</div>
+
+Code pour frontend/frontend-app/src/styles.scss :
+:root {
+  color-scheme: light;
+  font-family: 'Inter', sans-serif;
+  background: #f7fafc;
+  color: #111827;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+}
+
+.page-login,
+.page-offers {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  border-radius: 32px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
+  cursor: pointer;
+}
+
+input {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  margin-top: 0.75rem;
+  background: #f8fafc;
+}
+
+.offer-card {
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+offer-card h2 {
+  margin: 0.5rem 0;
+}
+
+.tag {
+  display: inline-flex;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: #ecfccb;
+  color: #166534;
+  font-weight: 700;
+}
+
+Code pour frontend/frontend-app/src/app/core/services/api.service.ts :
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private apiUrl = 'http://127.0.0.1:8000/api';
+
+  constructor(private http: HttpClient) {}
+
+  login(payload: any) {
+    return this.http.post(`${this.apiUrl}/login`, payload);
+  }
+
+  register(payload: any) {
+    return this.http.post(`${this.apiUrl}/register`, payload);
+  }
+
+  getOffers() {
+    return this.http.get(`${this.apiUrl}/offres`);
+  }
+
+  getCandidatures() {
+    return this.http.get(`${this.apiUrl}/candidatures`);
+  }
+
+  createCandidature(formData: FormData) {
+    return this.http.post(`${this.apiUrl}/candidatures`, formData);
+  }
+
+  getProfile() {
+    return this.http.get(`${this.apiUrl}/profil`);
+  }
+
+  updateProfile(payload: any) {
+    return this.http.put(`${this.apiUrl}/profil`, payload);
+  }
+}
+
+Code pour frontend/frontend-app/src/app/core/services/auth.service.ts :
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  constructor(private router: Router) {}
+
+  saveToken(token: string) {
+    localStorage.setItem('auth_token', token);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
+  logout() {
+    localStorage.removeItem('auth_token');
+    this.router.navigate(['/login']);
+  }
+}
+
+Code pour frontend/frontend-app/src/app/core/guards/auth.guard.ts :
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthGuard implements CanActivate {
+  constructor(private auth: AuthService, private router: Router) {}
+
+  canActivate(): boolean {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return false;
+    }
+    return true;
+  }
+}
+
+Code pour frontend/frontend-app/src/app/pages/login/login.component.ts :
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
+})
+export class LoginComponent {
+  email = '';
+  password = '';
+  error = '';
+
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private router: Router
+  ) {}
+
+  submit() {
+    this.api.login({ email: this.email, password: this.password }).subscribe({
+      next: (res: any) => {
+        this.auth.saveToken(res.token);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Erreur de connexion';
+      }
+    });
+  }
+}
+
+Code pour frontend/frontend-app/src/app/pages/login/login.component.html :
+<div class="page-login">
+  <div class="card">
+    <h1>Se connecter</h1>
+    <p class="subtitle">Accédez à votre espace stagiaire ou entreprise</p>
+
+    <form (ngSubmit)="submit()">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" name="email" required />
+
+      <label>Mot de passe</label>
+      <input type="password" [(ngModel)]="password" name="password" required />
+
+      <button type="submit">Connexion</button>
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </form>
+
+    <div class="footer">
+      <span>Pas encore de compte ?</span>
+      <a routerLink="/register">Créer un compte</a>
+    </div>
+  </div>
+</div>
+
+Code pour frontend/frontend-app/src/app/pages/offers/offers.component.ts :
+import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../../core/services/api.service';
+
+@Component({
+  selector: 'app-offers',
+  templateUrl: './offers.component.html',
+  styleUrls: ['./offers.component.scss']
+})
+export class OffersComponent implements OnInit {
+  offers: any[] = [];
+  error = '';
+
+  constructor(private api: ApiService) {}
+
+  ngOnInit(): void {
+    this.api.getOffers().subscribe({
+      next: (res: any) => this.offers = res.data || res,
+      error: (err) => this.error = err.error?.message || 'Impossible de charger les offres'
+    });
+  }
+}
+
+Code pour frontend/frontend-app/src/app/pages/offers/offers.component.html :
+<div class="page-offers">
+  <div class="top">
+    <h1>Offres de stage</h1>
+    <p>Découvrez les meilleures opportunités et postulez en quelques clics.</p>
+  </div>
+
+  <div class="list">
+    <article class="offer-card" *ngFor="let offer of offers">
+      <div class="card-head">
+        <span class="tag">Offre</span>
+        <h2>{{ offer.titre }}</h2>
+      </div>
+      <p>{{ offer.description }}</p>
+
+      <div class="meta">
+        <span>{{ offer.domaine }}</span>
+        <span>{{ offer.localisation }}</span>
+      </div>
+
+      <div class="actions">
+        <button>Postuler</button>
+      </div>
+    </article>
+  </div>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+</div>
+
+Code pour frontend/frontend-app/src/styles.scss :
+:root {
+  color-scheme: light;
+  font-family: 'Inter', sans-serif;
+  background: #f7fafc;
+  color: #111827;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+}
+
+.page-login,
+.page-offers {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  border-radius: 32px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
+  cursor: pointer;
+}
+
+input {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  margin-top: 0.75rem;
+  background: #f8fafc;
+}
+
+.offer-card {
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+offer-card h2 {
+  margin: 0.5rem 0;
+}
+
+.tag {
+  display: inline-flex;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: #ecfccb;
+  color: #166534;
+  font-weight: 700;
+}
+
+7. Consignes Design
+Utiliser des cartes arrondies.
+Ajouter des ombres légères.
+Utiliser un thème moderne vert/blanc.
+Garder une interface simple et propre.
+Éviter les pages surchargées.
+
+8. Conclusion / Récapitulatif
+Membre 1 : structure backend/frontend et création Angular.
+Membre 2 : finalisation complète des APIs Laravel.
+Membre 3 : base de données, relations, seeders et migrations.
+Membre 4 : authentification, rôles et sécurité.
+
+Objectif final : obtenir une application moderne, fonctionnelle et prête pour la démonstration.
