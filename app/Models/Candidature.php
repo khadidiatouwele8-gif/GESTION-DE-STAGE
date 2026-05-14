@@ -10,8 +10,11 @@ class Candidature extends Model
     use HasFactory;
 
     protected $fillable = [
-        'etudiant_id', 'offre_id', 'lettre_motivation', 
-        'cv_path', 'statut'
+        'etudiant_id',
+        'offre_id',
+        'lettre_motivation',
+        'cv',
+        'statut'
     ];
 
     public function etudiant()

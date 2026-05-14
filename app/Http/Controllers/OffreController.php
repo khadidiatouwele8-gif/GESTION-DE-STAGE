@@ -2,47 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreOffreRequest;
+use App\Http\Resources\OffreResource;
+use App\Models\Offre;
 
 class OffreController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $offres = Offre::with('entreprise')->where('statut', 'ouverte')->get();
+        return OffreResource::collection($offres);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreOffreRequest $request)
     {
-        //
+        $offre = Offre::create($request->validated());
+        return new OffreResource($offre);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $offre = Offre::with('entreprise')->findOrFail($id);
+        return new OffreResource($offre);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(StoreOffreRequest $request, $id)
     {
-        //
+        $offre = Offre::findOrFail($id);
+        $offre->update($request->validated());
+        return new OffreResource($offre);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $offre = Offre::findOrFail($id);
+        $offre->delete();
+        return response()->json(['message' => 'Offre supprimée avec succès']);
     }
 }

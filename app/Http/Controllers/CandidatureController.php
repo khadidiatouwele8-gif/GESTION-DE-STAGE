@@ -2,48 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreCandidatureRequest;
+use App\Http\Resources\CandidatureResource;
 use App\Models\Candidature;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CandidatureController extends Controller
 {
-    /**
-     * Liste des candidatures
-     */
     public function index()
     {
-        return response()->json(['message' => 'Liste des candidatures (Architecture OK)']);
+        $candidatures = Candidature::with(['etudiant.user', 'offre.entreprise'])->get();
+        return CandidatureResource::collection($candidatures);
     }
 
-    /**
-     * Postuler à un stage
-     */
-    public function store(Request $request)
+    public function store(StoreCandidatureRequest $request)
     {
-        return response()->json(['message' => 'Candidature envoyée (Architecture OK)'], 201);
+        $data = $request->validated();
+
+        if ($request->hasFile('cv')) {
+            $data['cv'] = $request->file('cv')->store('cvs', 'public');
+        }
+
+        if ($request->hasFile('lettre_motivation')) {
+            $data['lettre_motivation'] = $request->file('lettre_motivation')->store('lettres', 'public');
+        }
+
+        $candidature = Candidature::create($data);
+        return new CandidatureResource($candidature->load(['etudiant.user', 'offre.entreprise']));
     }
 
-    /**
-     * Afficher une candidature spécifique
-     */
     public function show($id)
     {
-        return response()->json(['message' => 'Détail candidature ' . $id]);
+        $candidature = Candidature::with(['etudiant.user', 'offre.entreprise'])->findOrFail($id);
+        return new CandidatureResource($candidature);
     }
 
-    /**
-     * Mettre à jour une candidature
-     */
-    public function update(Request $request, $id)
+    public function update(StoreCandidatureRequest $request, $id)
     {
-        return response()->json(['message' => 'Candidature ' . $id . ' mise à jour']);
+        $candidature = Candidature::findOrFail($id);
+        $data = $request->validated();
+
+        if ($request->hasFile('cv')) {
+            if ($candidature->cv) {
+                Storage::disk('public')->delete($candidature->cv);
+            }
+            $data['cv'] = $request->file('cv')->store('cvs', 'public');
+        }
+
+        if ($request->hasFile('lettre_motivation')) {
+            if ($candidature->lettre_motivation) {
+                Storage::disk('public')->delete($candidature->lettre_motivation);
+            }
+            $data['lettre_motivation'] = $request->file('lettre_motivation')->store('lettres', 'public');
+        }
+
+        $candidature->update($data);
+        return new CandidatureResource($candidature->load(['etudiant.user', 'offre.entreprise']));
     }
 
-    /**
-     * Supprimer une candidature
-     */
     public function destroy($id)
     {
+        $candidature = Candidature::findOrFail($id);
+
+        if ($candidature->cv) {
+            Storage::disk('public')->delete($candidature->cv);
+        }
+        if ($candidature->lettre_motivation) {
+            Storage::disk('public')->delete($candidature->lettre_motivation);
+        }
+
+        $candidature->delete();
         return response()->json(['message' => 'Candidature supprimée avec succès']);
     }
 }
