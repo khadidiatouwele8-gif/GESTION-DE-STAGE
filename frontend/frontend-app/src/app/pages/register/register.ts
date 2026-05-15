@@ -32,7 +32,8 @@ export class Register {
         name: this.name,
         email: this.email,
         password: this.password,
-        password_confirmation: this.password_confirmation
+        password_confirmation: this.password_confirmation,
+        role_id: 5
       })
     })
     .then(res => res.json())

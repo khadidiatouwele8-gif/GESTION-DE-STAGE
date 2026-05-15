@@ -1,13 +1,13 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Navbar } from '../../core/components/navbar/navbar';
 
 @Component({
   selector: 'app-entreprise',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Navbar],
   templateUrl: './entreprise.html',
   styleUrl: './entreprise.scss'
 })
@@ -15,12 +15,10 @@ export class Entreprise implements OnInit {
   offres: any[] = [];
   success = '';
   error = '';
-  offre = {
-    titre: '', description: '', domaine: '',
-    localisation: '', duree_mois: 3, date_expiration: ''
-  };
+  offre = { titre:'', description:'', domaine:'', localisation:'', duree_mois:3, date_expiration:'' };
 
   private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef);
   constructor(private router: Router) {}
 
   ngOnInit(): void {
@@ -35,40 +33,33 @@ export class Entreprise implements OnInit {
     fetch('http://localhost:8000/api/offres', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.json())
-    .then(data => this.offres = data.data || data);
+    .then(r => r.json())
+    .then(d => {
+      this.offres = d.data || d;
+      this.cdr.detectChanges();
+    });
   }
 
   creerOffre() {
     const token = localStorage.getItem('token');
     fetch('http://localhost:8000/api/offres', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        ...this.offre,
-        entreprise_id: 1,
-        date_publication: new Date().toISOString().split('T')[0]
-      })
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...this.offre, entreprise_id:1, date_publication: new Date().toISOString().split('T')[0] })
     })
-    .then(res => res.json())
+    .then(r => r.json())
     .then(() => {
-      this.success = 'Offre publiée avec succès !';
-      this.error = '';
-      this.chargerOffres();
+      this.success = 'Offre publiée !'; this.error = '';
       this.offre = { titre:'', description:'', domaine:'', localisation:'', duree_mois:3, date_expiration:'' };
+      this.chargerOffres();
     })
-    .catch(() => this.error = 'Erreur lors de la création');
+    .catch(() => { this.error = 'Erreur lors de la création'; this.cdr.detectChanges(); });
   }
 
   supprimerOffre(id: number) {
     const token = localStorage.getItem('token');
     fetch(`http://localhost:8000/api/offres/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(() => this.chargerOffres());
+      method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+    }).then(() => this.chargerOffres());
   }
 }

@@ -1,12 +1,12 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { Navbar } from '../../core/components/navbar/navbar';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, Navbar],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
@@ -17,28 +17,41 @@ export class Dashboard implements OnInit {
   nbStages = 0;
 
   private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef);
   constructor(private router: Router) {}
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-
     const token = localStorage.getItem('token');
-    if (!token) {
-      this.router.navigate(['/login']);
-      return;
-    }
+    if (!token) { this.router.navigate(['/login']); return; }
 
     fetch('http://localhost:8000/api/user', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.json())
-    .then(data => this.userName = data.name || 'Utilisateur');
+    .then(r => r.json())
+    .then(d => {
+      this.userName = d.name || 'Utilisateur';
+      this.cdr.detectChanges();
+    });
 
     fetch('http://localhost:8000/api/offres', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.json())
-    .then(data => this.nbOffres = (data.data || data).length);
+    .then(r => r.json())
+    .then(d => {
+      this.nbOffres = (d.data || d).length;
+      this.cdr.detectChanges();
+    });
+
+    fetch('http://localhost:8000/api/candidatures', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(r => r.json())
+    .then(d => {
+      this.nbCandidatures = (d.data || d).length;
+      this.cdr.detectChanges();
+    })
+    .catch(() => {});
   }
 
   logout() {

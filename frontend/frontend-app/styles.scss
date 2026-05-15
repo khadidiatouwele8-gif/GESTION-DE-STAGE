@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 :root {
   --primary: #0A66C2;
   --primary-dark: #084d93;
@@ -7,7 +9,7 @@
   --bg: #F3F2EF;
   --white: #FFFFFF;
   --border: #E2E8F0;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
   --radius: 8px;
 }
@@ -24,13 +26,6 @@ body {
 a { text-decoration: none; color: var(--primary); }
 a:hover { text-decoration: underline; }
 
-/* Reset boutons — IMPORTANT */
-button {
-  all: unset;
-  cursor: pointer;
-  box-sizing: border-box;
-}
-
 .card {
   background: var(--white);
   border: 1px solid var(--border);
@@ -46,53 +41,47 @@ button {
   gap: 8px;
   padding: 0.6rem 1.25rem;
   border-radius: 24px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: inherit;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
+  border: none;
   transition: all 0.15s;
-  white-space: nowrap;
 }
 
 .btn-primary {
   background: var(--primary);
-  color: white !important;
+  color: white;
 }
 .btn-primary:hover { background: var(--primary-dark); }
 
 .btn-outline {
   background: transparent;
-  color: var(--primary) !important;
+  color: var(--primary);
   border: 1.5px solid var(--primary);
 }
 .btn-outline:hover { background: #EBF3FB; }
 
 .btn-danger {
   background: transparent;
-  color: #DC2626 !important;
+  color: #DC2626;
   border: 1.5px solid #DC2626;
 }
 .btn-danger:hover { background: #FEF2F2; }
 
-.btn-full {
-  width: 100%;
-  border-radius: var(--radius) !important;
-  padding: 0.75rem !important;
-  font-size: 1rem !important;
-}
+.btn-full { width: 100%; border-radius: var(--radius); padding: 0.75rem; font-size: 1rem; }
 
 input, textarea, select {
   width: 100%;
   padding: 0.65rem 0.9rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: inherit;
   font-size: 0.9rem;
   background: var(--white);
   color: var(--text);
   transition: border-color 0.15s;
   outline: none;
-  box-sizing: border-box;
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--primary);
@@ -109,6 +98,8 @@ label {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+.form-group { margin-bottom: 0.25rem; }
 
 .tag {
   display: inline-block;

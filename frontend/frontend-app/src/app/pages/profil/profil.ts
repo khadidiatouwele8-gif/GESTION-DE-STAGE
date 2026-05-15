@@ -1,12 +1,12 @@
 import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { Navbar } from '../../core/components/navbar/navbar';
 
 @Component({
   selector: 'app-profil',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, Navbar],
   templateUrl: './profil.html',
   styleUrl: './profil.scss'
 })
@@ -23,17 +23,14 @@ export class Profil implements OnInit {
 
     fetch('http://localhost:8000/api/user', {
       headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => this.user = data);
+    }).then(r => r.json()).then(d => this.user = d);
   }
 
   logout() {
     if (!isPlatformBrowser(this.platformId)) return;
     const token = localStorage.getItem('token');
     fetch('http://localhost:8000/api/logout', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` }
+      method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
     }).finally(() => {
       localStorage.removeItem('token');
       this.router.navigate(['/login']);

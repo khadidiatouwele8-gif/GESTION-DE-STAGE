@@ -1,23 +1,41 @@
-<div class="page-login">
-  <div class="card">
-    <h1>Se connecter</h1>
-    <p>Accédez à votre espace stagiaire ou entreprise</p>
+<div style="min-height:100vh; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:1.5rem;">
+  <div style="width:100%; max-width:420px;">
 
-    <form (ngSubmit)="submit()">
-      <label>Email</label>
-      <input type="email" [(ngModel)]="email" name="email" required />
+    <div style="text-align:center; margin-bottom:2rem;">
+      <div style="display:inline-flex; align-items:center; justify-content:center; width:52px; height:52px; background:#0A66C2; border-radius:12px; margin-bottom:1rem;">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <text x="14" y="20" text-anchor="middle" fill="white" font-size="13" font-weight="700" font-family="sans-serif">GS</text>
+        </svg>
+      </div>
+      <h1 style="font-size:1.5rem; font-weight:700; color:var(--navy);">Bon retour</h1>
+      <p style="color:var(--text-muted); margin-top:4px; font-size:0.9rem;">Connectez-vous à votre espace</p>
+    </div>
 
-      <label>Mot de passe</label>
-      <input type="password" [(ngModel)]="password" name="password" required />
+    <div class="card" style="padding:2rem;">
+      <form (ngSubmit)="submit()">
+        <div class="form-group">
+          <label>Adresse email</label>
+          <input type="email" [(ngModel)]="email" name="email" placeholder="vous@exemple.com" required />
+        </div>
 
-      <button type="submit">Connexion</button>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••" required />
+        </div>
 
-      <p style="color:red" *ngIf="error">{{ error }}</p>
-    </form>
+        <div class="alert-error" *ngIf="error">{{ error }}</div>
 
-    <div style="margin-top:1rem; text-align:center">
-      <span>Pas encore de compte ? </span>
-      <a routerLink="/register">Créer un compte</a>
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:1.25rem;">
+          Se connecter
+        </button>
+      </form>
+
+      <div class="divider"></div>
+
+      <p style="text-align:center; font-size:0.88rem; color:var(--text-muted);">
+        Pas encore de compte ?
+        <a routerLink="/register" style="font-weight:600;">Créer un compte</a>
+      </p>
     </div>
   </div>
 </div>

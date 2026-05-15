@@ -1,29 +1,32 @@
-<div style="padding:2rem; max-width:600px; margin:0 auto;">
-  <h1>Mon Profil</h1>
+<app-navbar />
 
-  <div class="card" style="margin-top:1.5rem;">
-    <div style="margin-bottom:1rem;">
-      <label style="color:#6b7280;">Nom complet</label>
-      <p style="font-weight:600; font-size:1.1rem;">{{ user.name }}</p>
+<div style="max-width:700px; margin:0 auto; padding:2rem 1.5rem;">
+  <div class="card" style="padding:2rem; margin-bottom:1rem;">
+    <div style="display:flex; align-items:center; gap:1.25rem; margin-bottom:1.5rem;">
+      <div style="width:80px; height:80px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:1.75rem; font-weight:700; flex-shrink:0;">
+        {{ (user.name || 'U').charAt(0).toUpperCase() }}
+      </div>
+      <div>
+        <h1 style="font-size:1.25rem; font-weight:700; color:var(--navy);">{{ user.name }}</h1>
+        <p style="color:var(--text-muted); font-size:0.88rem;">{{ user.email }}</p>
+        <span class="tag" style="margin-top:6px; display:inline-block;">{{ user.role?.nom || 'Étudiant' }}</span>
+      </div>
     </div>
-    <div style="margin-bottom:1rem;">
-      <label style="color:#6b7280;">Email</label>
-      <p style="font-weight:600;">{{ user.email }}</p>
-    </div>
-    <div style="margin-bottom:1rem;">
-      <label style="color:#6b7280;">Rôle</label>
-      <p style="font-weight:600;">{{ user.role?.nom || 'Non défini' }}</p>
+    <div class="divider"></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div>
+        <p style="font-size:0.78rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">Email</p>
+        <p style="font-size:0.92rem; color:var(--text); margin-top:3px;">{{ user.email }}</p>
+      </div>
+      <div>
+        <p style="font-size:0.78rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">Membre depuis</p>
+        <p style="font-size:0.92rem; color:var(--text); margin-top:3px;">{{ user.created_at | date:'mediumDate' }}</p>
+      </div>
     </div>
   </div>
 
-  <div style="margin-top:1.5rem; display:flex; gap:1rem;">
-    <a routerLink="/dashboard" style="flex:1;">
-      <button style="background:linear-gradient(135deg,#86efac,#4ade80);">
-        Retour au dashboard
-      </button>
-    </a>
-    <button (click)="logout()" style="flex:1; background:linear-gradient(135deg,#fca5a5,#f87171);">
-      Se déconnecter
-    </button>
+  <div style="display:flex; gap:0.75rem;">
+    <a routerLink="/dashboard" class="btn btn-outline">← Dashboard</a>
+    <button (click)="logout()" class="btn btn-danger">Se déconnecter</button>
   </div>
 </div>
